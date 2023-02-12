@@ -1,4 +1,6 @@
 const express = require('express');
+const {pool} = require("./pool");
+
 const app = express();
 app.set('view engine', 'ejs');
 
@@ -10,3 +12,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`server started at localhost:${PORT}`);
 });
+
+pool.query("insert into client(username) values ('singularity')");
