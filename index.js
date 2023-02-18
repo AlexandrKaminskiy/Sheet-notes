@@ -10,6 +10,7 @@ app.use('/', noteRoute)
 const PORT = 3000;
 
 app.get('/', (req, res) => {
+    req.query.id.
     res.render('new-node-form')
 });
 
