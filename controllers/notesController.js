@@ -3,16 +3,19 @@ const { pool } = require("../pool");
 
 class NotesContoller {
     async createNote(req, res) {
+        const name = req.body.name;
+        const bpm = req.body.bpm;
+        const complexity = req.body.complexity;
+        const duration = req.body.duration;
+        const instrument = req.body.instrument;
         const description = req.body.description;
-        
-        pool.query("insert into sheet_note(description) values($1) returning *",[description], function (err, result, fields) {
+        const params = [name, bpm, complexity, duration, instrument, description];
+        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description) values($1, $2, $3, $4, now(), $5, $6) returning *",params, function (err, result, fields) {
             res.json(result.rows);
         });
     }
 
     async getAllNotes(req, res) {
-        var t = req.query.idd;
-        console.log(t);
         pool.query("select * from sheet_note", function (err, result, fields) {
             let list = {notes: result.rows}
             res.render('start-page', list);
@@ -46,7 +49,6 @@ class NotesContoller {
     }
 
     async findNote(req, res) {
-        //test creation date
         const queryDetails = getQueryString(req.query);
         console.log(queryDetails.actParams);
         console.log(queryDetails.strQuery);
@@ -62,6 +64,9 @@ class NotesContoller {
 
     }
 
+    async getNoteForm(req, res) {
+        res.render('new-note-form.ejs');
+    }
     
 }
 const paramMap = new Map();
@@ -95,4 +100,5 @@ function getQueryString(reqQuery) {
         }
         return { strQuery, actParams };
 }
+
 module.exports = new NotesContoller();

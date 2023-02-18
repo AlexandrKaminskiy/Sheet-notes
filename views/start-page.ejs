@@ -5,12 +5,46 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPP1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" 
+    rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" 
+    crossorigin="anonymous"/>
+
 </head>
 <body>
-    <ul>
-        <% notes.forEach( note => { %>
-            <li> <%= note.description %> <a href="/notes/<%= note.id %>">edit</a></li>
-        <% }) %>
-      </ul>
+
+    <%- include("blocks/header") -%>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+              <td>№</td>
+              <td>Name</td>
+              <td>Bpm</td>
+              <td>Complexity</td>
+              <td>Duration</td>
+              <td>Creation date</td>
+              <td>Instrument</td>
+            </tr>
+          </thead>
+        <tbody>
+            <% var i = 1; notes.forEach( note => { %>
+                <tr>
+                    <td> <%= i++ %> </td>
+                    <td> <%= note.name %> </td>
+                    <td> <%= note.bpm %> </td>
+                    <td> <%= note.complexity %> </td>
+                    <td> <%= note.duration %> </td>
+                    <td> <%= note.creation_date.toLocaleDateString('en-GB') %> </td>
+                    <td> <%= note.instrument %> </td>
+                    <td><a href="/notes/<%= note.id %>" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Edit</a></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <div>
+        <a href="/newNoteForm" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Add sheet</a>
+    </div>
+    
 </body>
 </html>
