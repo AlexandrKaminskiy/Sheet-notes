@@ -8,27 +8,58 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" 
     rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" 
     crossorigin="anonymous"/>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <!-- <link rel="stylesheet" href="/styles.css"> -->
 </head>
 <body>
-
     <%- include("blocks/header") -%>
-
+            
+    <form action="/find" method="get">
+        <div class="form-inline">
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="text" class="form-control" name="name" placeholder="Name" style="width: 400px;">
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="text" class="form-control" name="bpm" placeholder="Bpm" style="width: 400px;">
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="text" name="daterange" name="dateRange" value="01/01/2023 - 01/11/2024" style="width: 400px;"/>
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="text" class="form-control" name="complexity" placeholder="Complexity" style="width: 400px;">
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="text" class="form-control" name="durationFrom" placeholder="Duration from" style="width: 200px;">
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="text" class="form-control" name="durationTo" placeholder="Duration to" style="width: 200px;">
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <button type="submit" class="btn btn-primary">Find</button>
+            </div>
+        </div>
+    </form>
     <table class="table table-bordered">
-        <thead>
+        <thead class="table-light" style="background-color: transparent;">
             <tr>
-              <td>№</td>
-              <td>Name</td>
-              <td>Bpm</td>
-              <td>Complexity</td>
-              <td>Duration</td>
-              <td>Creation date</td>
-              <td>Instrument</td>
+                <td>№</td>
+                <td>Name</td>
+                <td>Bpm</td>
+                <td>Complexity</td>
+                <td>Duration</td>
+                <td>Creation date</td>
+                <td>Instrument</td>
+                <td>Edit</td>
             </tr>
-          </thead>
+        </thead>
         <tbody>
             <% var i = 1; notes.forEach( note => { %>
-                <tr>
+                <tr onclick="window.location.href='/'">
                     <td> <%= i++ %> </td>
                     <td> <%= note.name %> </td>
                     <td> <%= note.bpm %> </td>
@@ -36,15 +67,17 @@
                     <td> <%= note.duration %> </td>
                     <td> <%= note.creation_date.toLocaleDateString('en-GB') %> </td>
                     <td> <%= note.instrument %> </td>
-                    <td><a href="/notes/<%= note.id %>" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Edit</a></td>
+                    <td> <a href="/notes/updateForm/<%= note.id %>" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Edit</a> </td>
                 </tr>
             <% }) %>
         </tbody>
     </table>
 
     <div>
-        <a href="/newNoteForm" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Add sheet</a>
+        <a href="/newNoteForm" class="btn btn-primary btn-lg active" style="margin-left: 20px;" role="button" aria-pressed="true">Add sheet</a>
     </div>
-    
+
+    <script src="/js/request-filter.js"></script>
+    <script src="/js/datepicker.js"></script>
 </body>
 </html>
