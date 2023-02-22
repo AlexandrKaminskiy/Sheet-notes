@@ -10,4 +10,6 @@ router.get('/newNoteForm', notesContoller.getCreateNoteForm);
 router.post('/notes/update/:id', notesContoller.updateNote);
 router.get('/notes/updateForm/:id', notesContoller.getUpdateNoteForm);
 router.get('/find', notesContoller.findNote);
+router.get('/note-info/:id', notesContoller.getNote);
+router.get('/uploads/', notesContoller.uploadError);
 module.exports = router;

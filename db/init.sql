@@ -6,5 +6,6 @@ CREATE TABLE sheet_note (
     complexity INTEGER,
     duration INTEGER,
     creation_date DATE,
-    instrument VARCHAR
+    instrument VARCHAR,
+    filename VARCHAR
 );

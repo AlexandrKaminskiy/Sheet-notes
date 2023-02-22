@@ -10,32 +10,31 @@
     crossorigin="anonymous"/>
 </head>
 <body>
-    
     <% if (typeof note === 'undefined') note = {} %>
     <% if (typeof readonly === 'undefined') readonly = false %>
     <div style="margin-left: 20px;">
-      <form method="post" action="<%= act %>" enctype="multipart/form-data">
+      <form method="post" id="sendForm" action="<%= act %>" enctype="multipart/form-data">
           <div class="form-row">
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="text" class="form-control" name="name" placeholder="Name" value="<%=note.name%>">
+              <input type="text" class="form-control" id="name" name="name" required="true"  placeholder="Name" value="<%=note.name%>">
             </div>
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="text" class="form-control" name="bpm" placeholder="Bpm" value="<%=note.bpm%>">
+              <input type="number"  class="form-control" id="bpm" name="bpm" required="true"  placeholder="Bpm" value="<%=note.bpm%>">
             </div>
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="text" class="form-control" name="complexity" placeholder="Complexity" value="<%=note.complexity%>">
+              <input type="number"  class="form-control" id="complexity" name="complexity" required="true" placeholder="Complexity" value="<%=note.complexity%>">
             </div>
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="text" class="form-control" name="duration" placeholder="Duration" value="<%=note.duration%>">
+              <input type="number"  class="form-control" id="duration" name="duration" required="true" placeholder="Duration" value="<%=note.duration%>">
             </div>
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="text" class="form-control" name="instrument" placeholder="Instrument" value="<%=note.instrument%>">
+              <input type="text" class="form-control" id="instrument" name="instrument" required="true"  placeholder="Instrument" value="<%=note.instrument%>">
             </div>
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="text" class="form-control" name="description" placeholder="Description" value="<%=note.description%>">
+              <input type="text" class="form-control" id="description" name="description" required="true" placeholder="Description" value="<%=note.description%>">
             </div>
             <div class="col-7" style="margin-bottom: 20px;">
-              <input type="file" class="form-control" name="sheet">
+              <input type="file" class="form-control" id="file" name="sheet">
             </div>
             <button type="submit" class="btn btn-primary">Add</button>
           </div>

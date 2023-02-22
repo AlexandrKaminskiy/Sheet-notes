@@ -10,6 +10,34 @@
     crossorigin="anonymous"/>
 </head>
 <body>
-    
+    <%- include("blocks/header") -%>
+
+    <div style="margin-left: 20px;">
+        
+        <div class="form-row">
+            <div class="col-7" style="margin-bottom: 20px;">
+                <input type="text" class="form-control" value="<%=note.name%>" readonly="true">
+            </div>
+            <div class="col-7" style="margin-bottom: 20px;">
+                <input type="number"  class="form-control" value="<%=note.bpm%>" readonly="true">
+            </div>
+            <div class="col-7" style="margin-bottom: 20px;">
+                <input type="number"  class="form-control" value="<%=note.complexity%>" readonly="true">
+            </div>
+            <div class="col-7" style="margin-bottom: 20px;">
+                <input type="number"  class="form-control" value="<%=note.duration%>" readonly="true">
+            </div>
+            <div class="col-7" style="margin-bottom: 20px;">
+                <input type="text" class="form-control" value="<%=note.instrument%>" readonly="true">
+            </div>
+            <div class="col-7" style="margin-bottom: 20px;">
+                <input type="text" class="form-control" value="<%=note.description%>" readonly="true">
+            </div>
+            <div class="col-7" style="margin-bottom: 20px;">
+                <a href="/uploads/<%=note.filename%>">Download</a>
+            </div>
+        </div>
+        
+    </div>
 </body>
 </html>

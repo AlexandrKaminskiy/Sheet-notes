@@ -1,10 +1,16 @@
 const { pool } = require("../pool");
 
-
 class NotesContoller {
     async createNote(req, res) {
         const params = getParams(req.body);
-        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description) values($1, $2, $3, $4, now(), $5, $6) returning *",params, function (err, result, fields) {
+        let filedata = req.file;
+        if (filedata != undefined) {
+            params.push(filedata.filename);
+            var str1 = ", filename";
+            var str2 = ", $7";
+            console.log('smth');
+        }
+        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description" + str1 + ") values($1, $2, $3, $4, now(), $5, $6" + str2 + ") returning *",params, function (err, result, fields) {
             res.redirect('/notes');
         });
     }
@@ -37,7 +43,14 @@ class NotesContoller {
     async updateNote(req, res) {
         const params = getParams(req.body);
         params.push(req.params.id);
-        pool.query("update sheet_note set name=$1, bpm=$2, complexity=$3, duration=$4, instrument=$5, description=$6 where id=$7", params, function (err, result, fields) {
+        let filedata = req.file;
+        if (filedata != undefined) {
+            params.push(filedata.filename);
+            var str = ", filename=$8";
+            console.log('smth');
+        }
+        
+        pool.query("update sheet_note set name=$1, bpm=$2, complexity=$3, duration=$4, instrument=$5, description=$6"+ str +" where id=$7", params, function (err, result, fields) {
             
             res.redirect('/notes');
         });
@@ -64,7 +77,7 @@ class NotesContoller {
                 let list = { note: result.rows[0], act: "/notes/update/" + req.params.id};
                 res.render('update-note-form', list);
             } else {
-                res.render('error-page')
+                res.render('error-page');
                 res.status(404);
             }
         });
@@ -72,6 +85,10 @@ class NotesContoller {
 
     async getCreateNoteForm(req, res) {
         res.render('new-note-form', { act: "/notes/new"});
+    }
+
+    async uploadError(req, res) {
+        res.render('error-page')
     }
 }
 
@@ -85,10 +102,6 @@ paramMap.set("dateFrom", "creation_date::date >=");
 paramMap.set("dateTo", "creation_date::date <=");
 
 function getQueryString(reqQuery) {
-    let dateRange = reqQuery["daterange"];
-    let dates = dateRange.split(' - ');
-    let dateFrom = dates[0];
-    let dateTo = dates[1];
 
     const allkeys = Object.keys(reqQuery);
     const actkeys = [];
@@ -101,11 +114,6 @@ function getQueryString(reqQuery) {
         }
     });
     
-    actParams.push(dateFrom);
-    actkeys.push("dateFrom");
-    actParams.push(dateTo);
-    actkeys.push("dateTo");
-
     var query = [];
     var i = 1;
     actkeys.forEach((k) => {
@@ -120,6 +128,7 @@ function getQueryString(reqQuery) {
 }
 
 function getParams(body) {
+    console.log('there');
     console.log(body);
     const name = body.name;
     const bpm = body.bpm;
