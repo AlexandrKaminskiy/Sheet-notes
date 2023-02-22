@@ -4,10 +4,12 @@ class NotesContoller {
     async createNote(req, res) {
         const params = getParams(req.body);
         let filedata = req.file;
+        var str1 = "";
+        var str2 = "";
         if (filedata != undefined) {
             params.push(filedata.filename);
-            var str1 = ", filename";
-            var str2 = ", $7";
+            str1 = ", filename";
+            str2 = ", $7";
             console.log('smth');
         }
         pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description" + str1 + ") values($1, $2, $3, $4, now(), $5, $6" + str2 + ") returning *",params, function (err, result, fields) {
@@ -44,9 +46,11 @@ class NotesContoller {
         const params = getParams(req.body);
         params.push(req.params.id);
         let filedata = req.file;
+        var str = "";
+        
         if (filedata != undefined) {
             params.push(filedata.filename);
-            var str = ", filename=$8";
+            str = ", filename=$8";
             console.log('smth');
         }
         
