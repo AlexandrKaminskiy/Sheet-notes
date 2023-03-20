@@ -32,12 +32,14 @@ class NotesController {
                 res.json(result.rows[0]);
             } else {
                 res.status(404);
+                res.json('not found')
             }
         });
     }
 
     async deleteNote(req, res) {
         pool.query("delete from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
+            res.json('ok')
             res.status(200);
         });
     }
@@ -45,6 +47,7 @@ class NotesController {
     async updateNote(req, res) {
         const params = getParams(req.body);
         params.push(parseInt(req.params.id));
+        console.log(req.body)
         let filedata = req.file;
         let str = "";
         console.log(params)
