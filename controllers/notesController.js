@@ -1,4 +1,6 @@
-const { pool } = require("../pool");
+const {pool} = require("../pool");
+const fileSystem = require('fs');
+const path = require('path');
 
 class NotesController {
     async createNote(req, res) {
@@ -13,7 +15,7 @@ class NotesController {
             str2 = ", $7";
             console.log('smth');
         }
-        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description" + str1 + ") values($1, $2, $3, $4, now(), $5, $6" + str2 + ") returning *",params, function (err, result, fields) {
+        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description" + str1 + ") values($1, $2, $3, $4, now(), $5, $6" + str2 + ") returning *", params, function (err, result, fields) {
             res.json(result.rows);
         });
     }
@@ -25,7 +27,7 @@ class NotesController {
     }
 
     async getNote(req, res) {
-        pool.query("select * from sheet_note where id=$1",[req.params.id], function (err, result, fields) {
+        pool.query("select * from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
             if (result.rows.length !== 0) {
                 res.json(result.rows[0]);
             } else {
@@ -35,7 +37,7 @@ class NotesController {
     }
 
     async deleteNote(req, res) {
-        pool.query("delete from sheet_note where id=$1",[req.params.id], function (err, result, fields) {
+        pool.query("delete from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
             res.status(200);
         });
     }
@@ -52,11 +54,36 @@ class NotesController {
             console.log('smth');
         }
 
-        pool.query("update sheet_note set name=$1, bpm=$2, complexity=$3, duration=$4, instrument=$5, description=$6"+ str +" where id=$7", params, function (err, result) {
+        pool.query("update sheet_note set name=$1, bpm=$2, complexity=$3, duration=$4, instrument=$5, description=$6" + str + " where id=$7", params, function (err, result) {
             res.json(result.rows[0])
             res.status(200);
         });
 
+    }
+
+    async getFile(req, res) {
+        let filePath;
+        let id = req.params.id;
+        pool.query("select filename from sheet_note where id=$1", [id], function (err, result, fields) {
+            let filename = result.rows[0];
+            console.log(filename);
+            let stat;
+            try {
+                filePath = path.join(__dirname, `../uploads/${filename.filename}`);
+                stat = fileSystem.statSync(filePath);
+            } catch (e) {
+                res.status(404);
+                res.json(e);
+                return;
+            }
+            res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-Length': stat.size
+            });
+
+            let readStream = fileSystem.createReadStream(filePath);
+            readStream.pipe(res);
+        });
     }
 
 }
@@ -82,7 +109,7 @@ function getQueryString(reqQuery) {
             actkeys.push(key);
         }
     });
-    
+
     var query = [];
     var i = 1;
     actkeys.forEach((k) => {
@@ -93,7 +120,7 @@ function getQueryString(reqQuery) {
         strQuery += "where " + query.join(" AND ");
     }
     console.log(actParams);
-    return { strQuery, actParams };
+    return {strQuery, actParams};
 }
 
 function getParams(body) {
