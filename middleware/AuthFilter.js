@@ -44,9 +44,9 @@ class AuthFilter {
     refresh(req, res, next, refreshToken) {
         pool.query('select * from jwt_holder where refresh_token=$1', [refreshToken], (err, result, fields) => {
             let token = result.rows[0];
-
-            pool.query('delete from jwt_holder where client_id=$1', [token.client_id], (err, result, fields) => {
-                pool.query('select * from client where id=$1', [token.client_id], (err, result, fields) => {
+            let id = token.client_id;
+            pool.query('delete from jwt_holder where client_id=$1', [id], (err, result, fields) => {
+                pool.query('select * from client where id=$1', [id], (err, result, fields) => {
 
                     let client = result.rows[0];
 

@@ -6,7 +6,7 @@ const authFilter = require('../middleware/AuthFilter')
 const UNAUTHORIZED_PATH = ['/login', '/register']
 
 router.use((req, res, next) => {
-    console.log(req.path);
+    console.log(req.body);
     if (!UNAUTHORIZED_PATH.includes(req.path)) {
         authFilter.authenticate(req, res, next);
     } else {

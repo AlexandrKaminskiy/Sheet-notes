@@ -22,11 +22,13 @@ class JwtUtils {
         }
         return pool.query(query, [token]).then((result) => {
             if( result.rows.length > 0 ) {
-                if (jwt.verify(token, secret)) {
-                    return true;
-                }
+                try {
+                    if (jwt.verify(token, secret)) {
+                        return true;
+                    }
+                } catch (e) {}
+                return false;
             }
-            return false;
         })
     }
 
