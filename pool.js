@@ -7,4 +7,4 @@ const pool = new Pool({
   port: 5432,
   host: 'localhost',
 })
-module.exports = {pool};
+module.exports = { pool };

@@ -2,9 +2,10 @@ const Router = require('express');
 const router = Router();
 const notesController = require('../controllers/notesController');
 const clientController = require('../controllers/clientController');
+const authFilter = require('../middleware/AuthFilter')
 router.use((req, res, next) => {
     console.log('thereeeee')
-    next();
+    authFilter.authenticate(req, res, next);
 });
 router.get('/notes/:id', notesController.getNote);
 router.get('/notes', notesController.getAllNotes);
