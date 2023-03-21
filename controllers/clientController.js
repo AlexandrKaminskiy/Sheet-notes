@@ -49,8 +49,9 @@ class ClientController {
 
                     pool.query('insert into jwt_holder(access_token, refresh_token, client_id) VALUES ($1, $2, $3) ',
                         [generatedTokens.accessToken, generatedTokens.refreshToken, client.id], (err, result, fields) => {
-                            res.json({'accessToken': generatedTokens.accessToken,
-                                'refreshToken': generatedTokens.refreshToken})
+                            res.cookie('accessToken',generatedTokens.accessToken, { httpOnly: true } )
+                            res.cookie('refreshToken',generatedTokens.refreshToken, { httpOnly: true } )
+                            res.json('logged in')
                         });
                 });
             });

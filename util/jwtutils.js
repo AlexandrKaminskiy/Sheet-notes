@@ -13,10 +13,16 @@ class JwtUtils {
         return { refreshToken, accessToken }
     }
 
-    async validate(token) {
-        return pool.query('select * from jwt_holder where access_token=$1', [token]).then((result) => {
+    async validate(token, isAccess) {
+        let query;
+        if (isAccess) {
+            query = 'select * from jwt_holder where access_token=$1'
+        } else {
+            query = 'select * from jwt_holder where refresh_token=$1'
+        }
+        return pool.query(query, [token]).then((result) => {
             if( result.rows.length > 0 ) {
-                if (jwt.verify(token)) {
+                if (jwt.verify(token, secret)) {
                     return true;
                 }
             }
