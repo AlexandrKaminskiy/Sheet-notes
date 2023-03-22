@@ -16,8 +16,11 @@ class ClientController {
                 res.json('change your email and username');
                 return;
             }
+            let hashedPass;
 
-            let hashedPass = await bcrypt.hash(password, 10);
+            try {
+                hashedPass = await bcrypt.hash(password, 10);
+            } catch (e) {}
 
             pool.query('insert into client (username, email, password, is_active) values ($1, $2, $3, $4) returning username',
                 [username, email, hashedPass, false],
