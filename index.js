@@ -7,7 +7,7 @@ const multer  = require("multer");
 
 const app = express();
 app.use(cors({
-    origin: '*'
+    origin: 'http://localhost:4200', credentials: true
 }));
 app.use(express.static(__dirname));
 app.use(multer({dest:"uploads"}).single("sheet"));

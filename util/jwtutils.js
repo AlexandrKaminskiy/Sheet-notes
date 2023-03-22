@@ -32,6 +32,30 @@ class JwtUtils {
         })
     }
 
+    getTokens(req) {
+        let cookies = req.headers.cookie?.split('; ');
+        let accessToken;
+        let refreshToken;
+        cookies?.forEach((c) => {
+            if (c.startsWith('accessToken')) {
+                accessToken = c.split('=')[1];
+            }
+            if (c.startsWith('refreshToken')) {
+                refreshToken = c.split('=')[1];
+            }
+        });
+        return {accessToken, refreshToken}
+    }
+
+    async getClient(req) {
+        let token = this.getTokens(req)
+        return pool.query('select * from client join jwt_holder jh on client.id = jh.client_id', [token]).then((result) => {
+            if( result.rows.length > 0 ) {
+                return result.rows[0];
+            }
+        })
+    }
+
 }
 
 module.exports = new JwtUtils();

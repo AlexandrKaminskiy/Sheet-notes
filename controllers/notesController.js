@@ -88,6 +88,9 @@ class NotesController {
             readStream.pipe(res);
         });
     }
+    async checkAuth(req, res) {
+        res.json('ok')
+    }
 
 }
 

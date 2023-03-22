@@ -51,16 +51,26 @@ class ClientController {
                     let generatedTokens = jwtUtils.generateTokens(client);
                     pool.query('insert into jwt_holder(access_token, refresh_token, client_id) VALUES ($1, $2, $3) ',
                         [generatedTokens.accessToken, generatedTokens.refreshToken, client.id], (err, result, fields) => {
-                            res.cookie('accessToken', generatedTokens.accessToken, {httpOnly: true})
-                            res.cookie('refreshToken', generatedTokens.refreshToken, {httpOnly: true})
-                            res.json('logged in')
+                            res.cookie('accessToken', generatedTokens.accessToken, { httpOnly: true, maxAge: 9000000 })
+                            res.cookie('refreshToken', generatedTokens.refreshToken, { httpOnly: true, maxAge: 9000000 })
+                            res.status(200);
+                            res.json(generatedTokens.accessToken)
                         });
                 });
             });
 
         })
 
+    }
 
+    async logout(req, res) {
+        let accessToken = jwtUtils.getTokens(req).accessToken;
+        return pool.query('delete from jwt_holder where access_token=$1', [accessToken], (err, result, fields) => {
+            res.clearCookie('accessToken')
+            res.clearCookie('refreshToken')
+            res.status(200);
+            res.json('logged out');
+        })
     }
 
 }

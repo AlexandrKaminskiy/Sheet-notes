@@ -4,17 +4,9 @@ const jwtUtils = require("../util/jwtutils")
 class AuthFilter {
 
     authenticate(req, res, next) {
-        let cookies = req.headers.cookie?.split('; ');
-        let accessToken;
-        let refreshToken;
-        cookies.forEach((c) => {
-            if (c.startsWith('accessToken')) {
-                accessToken = c.split('=')[1];
-            }
-            if (c.startsWith('refreshToken')) {
-                refreshToken = c.split('=')[1];
-            }
-        });
+        let tokens = jwtUtils.getTokens(req);
+        let accessToken = tokens.accessToken;
+        let refreshToken = tokens.refreshToken
 
         if (accessToken !== undefined) {
             jwtUtils.validate(accessToken, true).then(result => {
@@ -22,22 +14,24 @@ class AuthFilter {
                     console.log('AUTHENTICATED');
                     next();
                 } else {
-                    console.log('FAILED AUTHENTICATION, TRYING TO REFRESH...');
-                    if (refreshToken !== undefined) {
-                        jwtUtils.validate(refreshToken, false).then(result => {
-                            if (result) {
-                                this.refresh(req, res, next, refreshToken);
-                            } else {
-                                res.status(401);
-                                res.json('unathorized');
-                            }
-                        })
+                    console.log('FAILED AUTHENTICATION');
+                }
+            });
+        } else {
+            console.log('TRYING TO REFRESH...');
+            if (refreshToken !== undefined) {
+                jwtUtils.validate(refreshToken, false).then(result => {
+                    if (result) {
+                        this.refresh(req, res, next, refreshToken);
                     } else {
                         res.status(401);
                         res.json('unathorized');
                     }
-                }
-            });
+                })
+            } else {
+                res.status(401);
+                res.json('unathorized');
+            }
         }
     }
 
