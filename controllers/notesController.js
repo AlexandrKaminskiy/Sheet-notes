@@ -1,6 +1,7 @@
 const {pool} = require("../pool");
 const fileSystem = require('fs');
 const path = require('path');
+const jwtUtils = require("../util/jwtutils");
 
 class NotesController {
     async createNote(req, res) {
@@ -9,25 +10,41 @@ class NotesController {
         let filedata = req.file;
         let str1 = "";
         let str2 = "";
-        if (filedata !== undefined) {
-            params.push(filedata.filename);
-            str1 = ", filename";
-            str2 = ", $7";
-            console.log('smth');
-        }
-        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description" + str1 + ") values($1, $2, $3, $4, now(), $5, $6" + str2 + ") returning *", params, function (err, result, fields) {
-            res.json(result.rows);
-        });
+
+        jwtUtils.getClient(req).then((result) => {
+            if (result.rows.length > 0) {
+                console.log(result.rows[0])
+                let client = result.rows[0];
+                params.push(client.id)
+                if (filedata !== undefined) {
+                    params.push(filedata.filename);
+                    str1 = ", filename";
+                    str2 = ", $8";
+                    console.log('smth');
+                }
+                pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description, client_id" + str1 + ") values($1, $2, $3, $4, now(), $5, $6, $7" + str2 + ") returning *", params, function (err, result, fields) {
+                    res.json(result.rows);
+                });
+            }
+        })
     }
 
     async getAllNotes(req, res) {
-        pool.query("select * from sheet_note", function (err, result, fields) {
-            res.json(result.rows);
+        jwtUtils.getClient(req).then((result) => {
+            if( result.rows.length > 0 ) {
+                console.log(result.rows[0])
+                let client = result.rows[0];
+                pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note join client on sheet_note.client_id = client.id where client.id=$1",[client.id], function (err, result, fields) {
+                    res.json(result.rows);
+                });
+            }
+
         });
+
     }
 
     async getNote(req, res) {
-        pool.query("select * from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
+        pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
             if (result.rows.length !== 0) {
                 res.json(result.rows[0]);
             } else {

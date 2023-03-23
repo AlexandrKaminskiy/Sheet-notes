@@ -49,11 +49,7 @@ class JwtUtils {
 
     async getClient(req) {
         let token = this.getTokens(req)
-        return pool.query('select * from client join jwt_holder jh on client.id = jh.client_id', [token]).then((result) => {
-            if( result.rows.length > 0 ) {
-                return result.rows[0];
-            }
-        })
+        return pool.query('select * from client join jwt_holder jh on client.id = jh.client_id where access_token=$1', [token.accessToken])
     }
 
 }

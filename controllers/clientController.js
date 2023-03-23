@@ -10,6 +10,7 @@ class ClientController {
         const email = body.email;
         const password = body.password;
 
+
         pool.query('select * from client where username=$1 or email=$2', [username, email], async (err, result, fields) => {
             if (result.rows.length > 0) {
                 res.status(409);
