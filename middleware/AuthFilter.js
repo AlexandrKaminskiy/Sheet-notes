@@ -12,7 +12,6 @@ class AuthFilter {
             jwtUtils.validate(accessToken, true).then(result => {
                 if (result) {
                     console.log('AUTHENTICATED');
-
                     next();
                 } else {
                     console.log('FAILED AUTHENTICATION');

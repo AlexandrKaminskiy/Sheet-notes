@@ -1,149 +1,129 @@
 const {pool} = require("../pool");
+const { v4: uuidv4 } = require('uuid');
 const fileSystem = require('fs');
 const path = require('path');
 const jwtUtils = require("../util/jwtutils");
+const connections = require("../connection")
+
 
 class NotesController {
-    async createNote(req, res) {
-        const params = getParams(req.body);
-        console.log(req.body);
-        let filedata = req.file;
+
+    async createNote(req, socket) {
+        console.log(req)
+        const params = getParams(req.data);
+        let filedata = req.data.sheet;
+
         let str1 = "";
         let str2 = "";
 
-        jwtUtils.getClient(req).then((result) => {
-            if (result.rows.length > 0) {
-                console.log(result.rows[0])
-                let client = result.rows[0];
-                params.push(client.id)
-                if (filedata !== undefined) {
-                    params.push(filedata.filename);
-                    str1 = ", filename";
-                    str2 = ", $8";
-                    console.log('smth');
-                }
-                pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description, client_id" + str1 + ") values($1, $2, $3, $4, now(), $5, $6, $7" + str2 + ") returning *", params, function (err, result, fields) {
-                    res.json(result.rows);
-                });
-            }
-        })
-    }
-
-    async getAllNotes(req, res) {
-        jwtUtils.getClient(req).then((result) => {
-            if( result.rows.length > 0 ) {
-                console.log(result.rows[0])
-                let client = result.rows[0];
-                pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note join client on sheet_note.client_id = client.id where client.id=$1",[client.id], function (err, result, fields) {
-                    res.json(result.rows);
-                });
-            }
-
-        });
-
-    }
-
-    async getNote(req, res) {
-        pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
-            if (result.rows.length !== 0) {
-                res.json(result.rows[0]);
-            } else {
-                res.status(404);
-                res.json('not found')
-            }
-        });
-    }
-
-    async deleteNote(req, res) {
-        pool.query("delete from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
-            res.json('ok')
-            res.status(200);
-        });
-    }
-
-    async updateNote(req, res) {
-        const params = getParams(req.body);
-        params.push(parseInt(req.params.id));
-        console.log(req.body)
-        let filedata = req.file;
-        let str = "";
-        console.log(params)
         if (filedata !== undefined) {
-            params.push(filedata.filename);
+            let filename = path.join(__dirname, "..", "uploads", uuidv4() + ".pdf");
+            fileSystem.writeFile(filename, filedata,  "binary",function(err) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    console.log("The file was saved!");
+                }
+            });
+            params.push(filename);
+            str1 = ", filename";
+            str2 = ", $7";
+        }
+
+        pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description" + str1 + ") values($1, $2, $3, $4, now(), $5, $6" + str2 + ") returning *", params, function (err, result, fields) {
+            console.log('inserted')
+            socket.sockets.emit(connections.ADD, result.rows)
+        });
+
+        // jwtUtils.getClient(req).then((result) => {
+        //     if (result.rows.length > 0) {
+        //         console.log(result.rows[0])
+        //         let client = result.rows[0];
+        //         params.push(client.id)
+        //
+        //
+        //     }
+        // })
+    }
+
+    async getAllNotes(req, socket) {
+
+        //todo where client.id
+        return pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note", function (err, result, fields) {
+            socket.sockets.emit(connections.ALL, result.rows)
+        });
+
+        // return jwtUtils.getClient(req).then((result) => {
+        //     if( result.rows.length > 0 ) {
+        //         console.log(result.rows[0])
+        //         let client = result.rows[0];
+        //
+        //     }
+        // });
+
+    }
+
+    async getNote(req, socket) {
+        console.log(req)
+        pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note where id=$1", [req.id], function (err, result, fields) {
+            if (result.rows.length !== 0) {
+                socket.sockets.emit(connections.NOTE, result.rows[0])
+            }
+        });
+    }
+
+    async deleteNote(req, socket) {
+        pool.query("delete from sheet_note where id=$1", [req.id], function (err, result, fields) {
+            socket.sockets.emit('allNotes', 'ok')
+        });
+    }
+
+    async updateNote(req, socket) {
+
+        console.log(req)
+        const params = getParams(req.data);
+        let filedata = req.data.sheet;
+        params.push(parseInt(req.data.id));
+        let str = "";
+
+
+        if (filedata !== undefined) {
+            let filename = path.join(__dirname, "..", "uploads", uuidv4() + ".pdf");
+            fileSystem.writeFile(filename, filedata,  "binary",function(err) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    console.log("The file was saved!");
+                }
+            });
+            params.push(filename);
             str = ", filename=$8";
-            console.log('smth');
+
         }
 
         pool.query("update sheet_note set name=$1, bpm=$2, complexity=$3, duration=$4, instrument=$5, description=$6" + str + " where id=$7", params, function (err, result) {
-            res.json(result.rows[0])
-            res.status(200);
+            // console.log("updated...")
+            socket.sockets.emit(connections.UPDATE, result.rows[0])
         });
 
     }
 
-    async getFile(req, res) {
+    async getFile(req, socket) {
         let filePath;
-        let id = req.params.id;
+        let id = req.id;
         pool.query("select filename from sheet_note where id=$1", [id], function (err, result, fields) {
-            let filename = result.rows[0];
-            console.log(filename);
-            let stat;
-            try {
-                filePath = path.join(__dirname, `../uploads/${filename.filename}`);
-                stat = fileSystem.statSync(filePath);
-            } catch (e) {
-                res.status(404);
-                res.json(e);
-                return;
-            }
-            res.writeHead(200, {
-                'Content-Type': 'application/pdf',
-                'Content-Length': stat.size
-            });
+            let filename = 'q';
+            filePath = path.join(__dirname, '..', 'uploads', '40e487ad-af21-46c8-8719-88b750ed71d1.pdf');
+            let data = fileSystem.readFileSync(filePath, 'binary');
+            console.log('sending file...')
+            socket.sockets.emit(connections.FILE, data);
 
-            let readStream = fileSystem.createReadStream(filePath);
-            readStream.pipe(res);
         });
     }
     async checkAuth(req, res) {
         res.json('ok')
     }
 
-}
-
-const paramMap = new Map();
-paramMap.set("name", "name =");
-paramMap.set("bpm", "bpm =");
-paramMap.set("durationFrom", "duration >=");
-paramMap.set("durationTo", "duration <=");
-paramMap.set("complexity", "complexity =");
-paramMap.set("dateFrom", "creation_date::date >=");
-paramMap.set("dateTo", "creation_date::date <=");
-
-function getQueryString(reqQuery) {
-
-    const allkeys = Object.keys(reqQuery);
-    const actkeys = [];
-    const keys = Array.from(paramMap.keys());
-    const actParams = [];
-    allkeys.forEach((key) => {
-        if (keys.includes(key) && reqQuery[key] != '') {
-            actParams.push(reqQuery[key]);
-            actkeys.push(key);
-        }
-    });
-
-    var query = [];
-    var i = 1;
-    actkeys.forEach((k) => {
-        query.push(`${paramMap.get(k)} $${i++}`);
-    });
-    var strQuery = "select * from sheet_note ";
-    if (query.length > 0) {
-        strQuery += "where " + query.join(" AND ");
-    }
-    console.log(actParams);
-    return {strQuery, actParams};
 }
 
 function getParams(body) {
