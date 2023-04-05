@@ -7,9 +7,16 @@ const UNAUTHORIZED_PATH = ['/login', '/register']
 
 router.use((req, res, next) => {
     console.log(req.body);
-
-    authFilter.authenticate(req, res, next);
+    if (!UNAUTHORIZED_PATH.includes(req.path)) {
+        authFilter.authenticate(req, res, next);
+    } else {
+        next();
+    }
 
 });
+
+router.post('/register', clientController.register)
+router.post('/login', clientController.login)
+router.put('/logout', clientController.logout)
 
 module.exports = router;

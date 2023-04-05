@@ -20,7 +20,6 @@ app.use(express.json());
 app.use('/', noteRoute);
 app.use(express.static('public'));
 
-
 let server = app.listen(PORT, () => {
     console.log(`server started at localhost:${PORT}`);
 });
@@ -29,18 +28,15 @@ let socketIo = socket(server, {
     cors: {
         origin: '*',
         credentials: true
-    },
+    }
 });
 
 socketIo.use((socket, next) => {
-    console.log('there')
-    console.log(socket.handshake.headers)
     next()
 });
 
 socketIo.on('connection', (socket) => {
     console.log('socket connection created');
-
     socket.on(connections.ALL, (changes) => {
         notesController.getAllNotes(changes, socketIo).then(() => {
             console.log('get all...')
