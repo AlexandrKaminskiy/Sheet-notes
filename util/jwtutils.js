@@ -33,7 +33,10 @@ class JwtUtils {
     }
 
     getTokens(req) {
-        let cookies = req.headers.cookie?.split('; ');
+        let cookies
+        try {
+            cookies = req.headers.cookie?.split('; ');
+        } catch (e) {}
         let accessToken;
         let refreshToken;
         cookies?.forEach((c) => {
@@ -47,9 +50,8 @@ class JwtUtils {
         return {accessToken, refreshToken}
     }
 
-    async getClient(req) {
-        let token = this.getTokens(req)
-        return pool.query('select * from client join jwt_holder jh on client.id = jh.client_id where access_token=$1', [token.accessToken])
+    async getClient(token) {
+        return pool.query('select * from client join jwt_holder jh on client.id = jh.client_id where access_token=$1', [token])
     }
 
 }

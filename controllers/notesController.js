@@ -4,61 +4,51 @@ const path = require('path');
 const jwtUtils = require("../util/jwtutils");
 
 class NotesController {
-    async createNote(req, res) {
-        const params = getParams(req.body);
-        console.log(req.body);
-        let filedata = req.file;
-        let str1 = "";
-        let str2 = "";
+    async createNote(token, note) {
+        const params = []
 
-        jwtUtils.getClient(req).then((result) => {
+        return jwtUtils.getClient(token).then((result) => {
             if (result.rows.length > 0) {
+
+                params.push(note.name)
+                params.push(note.bpm)
+                params.push(note.complexity)
+                params.push(note.duration)
+                params.push(note.instrument)
+                params.push(note.description)
+
                 console.log(result.rows[0])
                 let client = result.rows[0];
                 params.push(client.id)
-                if (filedata !== undefined) {
-                    params.push(filedata.filename);
-                    str1 = ", filename";
-                    str2 = ", $8";
-                    console.log('smth');
-                }
-                pool.query("insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description, client_id" + str1 + ") values($1, $2, $3, $4, now(), $5, $6, $7" + str2 + ") returning *", params, function (err, result, fields) {
-                    res.json(result.rows);
-                });
+
+                return pool.query(`insert into sheet_note(name, bpm, complexity, duration, creation_date, instrument, description, client_id)
+                     values($1, $2, $3, $4, now(), $5, $6, $7) returning *`, params);
             }
         })
     }
 
-    async getAllNotes(req, res) {
-        jwtUtils.getClient(req).then((result) => {
-            if( result.rows.length > 0 ) {
+    async getAllNotes(token) {
+        return jwtUtils.getClient(token).then((result) => {
+            if (result.rows.length > 0) {
                 console.log(result.rows[0])
                 let client = result.rows[0];
-                pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note join client on sheet_note.client_id = client.id where client.id=$1",[client.id], function (err, result, fields) {
-                    res.json(result.rows);
-                });
+                return pool.query(`select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename 
+                                   from sheet_note 
+                                   join client on sheet_note.client_id = client.id
+                                   where client.id=$1`, [client.id]
+                );
             }
 
         });
 
     }
 
-    async getNote(req, res) {
-        pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
-            if (result.rows.length !== 0) {
-                res.json(result.rows[0]);
-            } else {
-                res.status(404);
-                res.json('not found')
-            }
-        });
+    async getNote(id) {
+        return pool.query("select sheet_note.id, name, description, bpm, complexity, duration, creation_date, instrument, filename from sheet_note where id=$1", [id])
     }
 
-    async deleteNote(req, res) {
-        pool.query("delete from sheet_note where id=$1", [req.params.id], function (err, result, fields) {
-            res.json('ok')
-            res.status(200);
-        });
+    async deleteNote(id) {
+        pool.query("delete from sheet_note where id=$1", [id])
     }
 
     async updateNote(req, res) {
@@ -85,7 +75,7 @@ class NotesController {
         let filePath;
         let id = req.params.id;
         pool.query("select filename from sheet_note where id=$1", [id], function (err, result, fields) {
-            let filename = result.rows[0];
+            let filename = result?.rows[0];
             console.log(filename);
             let stat;
             try {
@@ -105,6 +95,7 @@ class NotesController {
             readStream.pipe(res);
         });
     }
+
     async checkAuth(req, res) {
         res.json('ok')
     }

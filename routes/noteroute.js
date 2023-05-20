@@ -19,11 +19,13 @@ router.delete('/notes/delete/:id', notesController.deleteNote);
 router.post('/notes/new', notesController.createNote);
 router.put('/notes/update/:id', notesController.updateNote);
 router.get('/notes/file/:id', notesController.getFile)
-
 router.get('/notes/checkauth', notesController.checkAuth)
-
 router.post('/register', clientController.register)
 router.post('/login', clientController.login)
-
 router.put('/logout', clientController.logout)
+
+
+
+
+
 module.exports = router;

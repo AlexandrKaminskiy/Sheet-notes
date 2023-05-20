@@ -12,10 +12,11 @@ class AuthFilter {
             jwtUtils.validate(accessToken, true).then(result => {
                 if (result) {
                     console.log('AUTHENTICATED');
-
                     next();
                 } else {
                     console.log('FAILED AUTHENTICATION');
+                    res.status(401);
+                    res.json('unathorized');
                 }
             });
         } else {
